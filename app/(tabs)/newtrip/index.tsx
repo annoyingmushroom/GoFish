@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
     borderColor: "#f7c4a2",
     borderRadius: 14,
-    backgroundColor: "#5a71e2",
+    backgroundColor: "#4478e6ff",
     justifyContent: "center",
     overflow: "hidden",
   },
