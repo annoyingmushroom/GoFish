@@ -3,9 +3,11 @@
 
 import { useTrips } from "@/app/TripsContext";
 import { FontAwesome } from "@expo/vector-icons";
+import { useState } from "react";
 import {
   Alert,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,6 +17,7 @@ import {
 export default function Index() {
   // Creates state for component (screen / container)
   const { trips, removeTrip } = useTrips();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const deletePress = (id: string) =>
     Alert.alert("Delete Trip", "Are you sure?", [
@@ -50,17 +53,34 @@ export default function Index() {
               <Text style={styles.title}>Fish Caught: {trip.fishGot}</Text>
               <View style={styles.imageRow}>
                 {(trip.imageUris ?? []).map((uri, index) => (
-                  <Image
-                    key={index}
-                    source={{ uri }}
-                    style={styles.tripImage}
-                  />
+                  <Pressable key={index} onPress={() => setSelectedImage(uri)}>
+                    <Image source={{ uri }} style={styles.tripImage} />
+                  </Pressable>
                 ))}
               </View>
             </View>
           );
         })}
       </ScrollView>
+
+      <Modal
+        visible={selectedImage !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedImage(null)}
+      >
+        <Pressable
+          style={styles.modalBackground}
+          onPress={() => setSelectedImage(null)}
+        >
+          {selectedImage && (
+            <Image
+              source={{ uri: selectedImage }}
+              style={styles.fullscreenImage}
+            />
+          )}
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -104,11 +124,9 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
-
     width: 40,
     height: 40,
     borderRadius: 20,
-
     justifyContent: "center",
     alignItems: "center",
   },
@@ -128,5 +146,18 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 10,
     resizeMode: "cover",
+  },
+
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.95)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  fullscreenImage: {
+    width: "100%",
+    height: "80%",
+    resizeMode: "contain",
   },
 });

@@ -147,12 +147,12 @@ const styles = StyleSheet.create({
   },
   label: {
     color: "#333",
-    fontSize: 20,
+    fontSize: 18,
     height: 20,
     lineHeight: 20,
   },
   text: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: "700",
     color: "#f4b183",
     textAlign: "center",
@@ -174,26 +174,23 @@ const styles = StyleSheet.create({
   photosSection: {
     marginTop: 12,
   },
-
   photosContainer: {
     height: 96,
     width: "100%",
-    borderWidth: 2,
-    borderStyle: "solid",
-    borderColor: "#f6cb75",
+    borderWidth: 1.5,
+    borderStyle: "dashed",
+    borderColor: "#f7c4a2",
     borderRadius: 14,
     backgroundColor: "#5a71e2",
     justifyContent: "center",
     overflow: "hidden",
   },
-
   photosContent: {
     flexDirection: "row",
     paddingHorizontal: 10,
     alignItems: "center",
     gap: 8,
   },
-
   photoThumb: {
     width: 74,
     height: 74,
@@ -201,7 +198,7 @@ const styles = StyleSheet.create({
     resizeMode: "none",
   },
   content: {
-    width: "100%", // take available width
-    maxWidth: 420, // optional: keeps it nice on tablets
+    width: "100%",
+    maxWidth: 420,
   },
 });

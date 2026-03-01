@@ -28,7 +28,7 @@ export default function Button({ label, theme, onPress }: Props) {
           onPress={logPress}
         >
           <FontAwesome
-            name="ship"
+            name="clipboard"
             size={18}
             color="#25292e"
             style={styles.buttonIcon}
@@ -52,10 +52,10 @@ export default function Button({ label, theme, onPress }: Props) {
 
 const styles = StyleSheet.create({
   buttonContainer: {
-    width: 200,
-    height: 40,
+    width: 300,
+    height: 60,
     marginHorizontal: 20,
-    marginVertical: 16,
+    marginVertical: 12,
     alignItems: "center",
     justifyContent: "center",
     padding: 2,
