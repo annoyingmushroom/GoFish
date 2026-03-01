@@ -1,33 +1,45 @@
+// New Trip Page
+// Add a new trip to array of trips
+
 import { useTrips } from "@/app/TripsContext";
 import Button from "@/components/Button";
 import PickImageButton from "@/components/PickImageButton";
 import { useState } from "react";
-import { Keyboard, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  Keyboard,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 export default function Index() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [location, setLocation] = useState("");
   const [fishGot, setFishGot] = useState("");
-  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageUris, setImageUris] = useState<string[]>([]);
 
   // Adding trip
   const { addTrip } = useTrips();
 
   const onLogTrip = () => {
     Keyboard.dismiss();
-    addTrip(date, time, location, fishGot, imageUri);
+    addTrip(date, time, location, fishGot, imageUris);
     setDate("");
     setLocation("");
     setTime("");
     setFishGot("");
-    setImageUri(null);
+    setImageUris([]);
   };
 
   return (
     <View style={styles.container}>
-      <View>
+      <View style={styles.content}>
         <Text style={styles.text}> What&apos;d you catch today?! </Text>
+
         <View style={styles.row}>
           <Text style={styles.label}> Date: </Text>
           <TextInput
@@ -44,6 +56,7 @@ export default function Index() {
             placeholder="DD/MM/YYYY"
           />
         </View>
+
         <View style={styles.row}>
           <Text style={styles.label}> Location: </Text>
           <TextInput
@@ -60,6 +73,7 @@ export default function Index() {
             placeholder="Macritchie Resevoir"
           />
         </View>
+
         <View style={styles.row}>
           <Text style={styles.label}> Time: </Text>
           <TextInput
@@ -76,6 +90,7 @@ export default function Index() {
             placeholder="3-5pm"
           />
         </View>
+
         <View style={styles.row}>
           <Text style={styles.label}> Fish Caught: </Text>
           <TextInput
@@ -92,9 +107,22 @@ export default function Index() {
             placeholder="Peacock Bass x1, Tilapia x1"
           />
         </View>
-        <View>
-          <PickImageButton uri={imageUri} setUri={setImageUri} />
+
+        <View style={styles.photosSection}>
+          <View style={styles.photosContainer}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.photosContent}
+            >
+              <PickImageButton uris={imageUris} setUris={setImageUris} />
+              {imageUris.map((uri, i) => (
+                <Image key={i} source={{ uri }} style={styles.photoThumb} />
+              ))}
+            </ScrollView>
+          </View>
         </View>
+
         <View style={styles.buttonWrapper}>
           <Button label="Log Trip" theme="confirm" onPress={onLogTrip} />
         </View>
@@ -108,12 +136,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 16,
     backgroundColor: "#4478e6ff",
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 2,
+    width: "100%",
   },
   label: {
     color: "#333",
@@ -130,7 +160,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   input: {
-    color: "#fff",
+    color: "#ffffff",
     fontStyle: "italic",
     fontSize: 18,
     flex: 1,
@@ -140,5 +170,38 @@ const styles = StyleSheet.create({
   buttonWrapper: {
     alignItems: "center",
     marginTop: 10,
+  },
+  photosSection: {
+    marginTop: 12,
+  },
+
+  photosContainer: {
+    height: 96,
+    width: "100%",
+    borderWidth: 2,
+    borderStyle: "solid",
+    borderColor: "#f6cb75",
+    borderRadius: 14,
+    backgroundColor: "#5a71e2",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+
+  photosContent: {
+    flexDirection: "row",
+    paddingHorizontal: 10,
+    alignItems: "center",
+    gap: 8,
+  },
+
+  photoThumb: {
+    width: 74,
+    height: 74,
+    borderRadius: 12,
+    resizeMode: "none",
+  },
+  content: {
+    width: "100%", // take available width
+    maxWidth: 420, // optional: keeps it nice on tablets
   },
 });

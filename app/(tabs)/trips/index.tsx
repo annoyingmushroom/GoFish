@@ -48,12 +48,15 @@ export default function Index() {
               <Text style={styles.title}>Location: {trip.location}</Text>
               <Text style={styles.title}>Time: {trip.time}</Text>
               <Text style={styles.title}>Fish Caught: {trip.fishGot}</Text>
-              {trip.imageUri && (
-                <Image
-                  source={{ uri: trip.imageUri }}
-                  style={styles.tripImage}
-                />
-              )}
+              <View style={styles.imageRow}>
+                {(trip.imageUris ?? []).map((uri, index) => (
+                  <Image
+                    key={index}
+                    source={{ uri }}
+                    style={styles.tripImage}
+                  />
+                ))}
+              </View>
             </View>
           );
         })}
@@ -113,11 +116,17 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: "center",
   },
-  tripImage: {
-    width: "100%",
-    height: 180,
-    borderRadius: 12,
+  imageRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
     marginTop: 10,
+  },
+
+  tripImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 10,
     resizeMode: "cover",
   },
 });

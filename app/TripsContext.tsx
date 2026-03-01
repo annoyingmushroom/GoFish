@@ -13,7 +13,7 @@ type Trip = {
   date: string;
   location: string;
   fishGot: string;
-  imageUri: string | null;
+  imageUris: string[];
 };
 
 const TripsContext = createContext<{
@@ -24,7 +24,7 @@ const TripsContext = createContext<{
     time: string,
     location: string,
     fishGot: string,
-    imageUri: string | null,
+    imageUris: string[],
   ) => void;
 
   removeTrip: (id: string) => void;
@@ -59,7 +59,7 @@ export function TripsProvider({ children }: { children: ReactNode }) {
     time: string,
     location: string,
     fishGot: string,
-    imageUri: string | null,
+    imageUris: string[],
   ) => {
     setTrips((prev) => [
       ...prev,
@@ -69,7 +69,7 @@ export function TripsProvider({ children }: { children: ReactNode }) {
         time,
         location,
         fishGot,
-        imageUri,
+        imageUris,
       },
     ]);
   };
