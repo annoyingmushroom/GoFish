@@ -1,50 +1,41 @@
-# Welcome to your Expo app 👋
+# GoFish
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+GoFish is a simple fishing trip log for keeping track of where you fished, what you caught, what bait or lure worked, and the photos worth remembering.
 
-## Get started
+It is built to feel like a lightweight digital logbook: fast enough to use after a trip, organized enough to look back through later.
 
-1. Install dependencies
+## What You Can Track
 
-   ```bash
-   npm install
-   ```
+- Trip date and time
+- Fishing location
+- Fish species and quantity
+- Bait or lure used
+- Trip notes
+- Photos from the trip
 
-2. Start the app
+## Features
 
-   ```bash
-   npx expo start
-   ```
+- Personal accounts
+- Cloud-synced trip history
+- Add, edit, and delete trips
+- Fish species suggestions based on your past catches
+- Bait/lure suggestions based on what you have used before
+- Photo uploads with fullscreen viewing
+- Stats for:
+  - total trips
+  - total fish caught
+  - top species
+  - top fishing spots
+  - best bait
+  - monthly catch activity
+  - personal bests
 
-In the output, you'll find options to open the app in a
+## Why GoFish
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Fishing trips are easy to forget in the details: the tide, the spot, the bait, the little pattern that worked. GoFish gives you one place to keep those details so your log gets more useful the more you use it.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Status
 
-## Get a fresh project
+GoFish is currently a web app ready for deployment.
 
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Developer setup notes live in [DEV_SETUP.md](./DEV_SETUP.md).
