@@ -10,7 +10,12 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.GoFish"
+      "bundleIdentifier": "com.annoyingmushroom.GoFish",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "GoFish uses your camera to add photos to your fishing trips.",
+        "NSPhotoLibraryUsageDescription": "GoFish accesses your photo library to add images to your trips."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,7 +26,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.GoFish"
+      "package": "com.annoyingmushroom.GoFish"
     },
     "web": {
       "output": "static",
@@ -40,11 +45,18 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ccc0b40a-8665-4704-9bbb-2a5c793cf33a"
+      }
     }
   }
 }

@@ -5,12 +5,13 @@ import FormField from "@/components/FormField";
 import PickImageButton from "@/components/PickImageButton";
 import { useTrips } from "@/contexts/TripsContext";
 import { knownBaits } from "@/lib/bait";
-import { toISODate } from "@/lib/date";
-import { FishEntry, knownSpecies, serializeFish } from "@/lib/fish";
+import { parseTripDate, toISODate } from "@/lib/date";
+import { FishEntry, knownSpecies, parseFish, serializeFish } from "@/lib/fish";
 import { fontStyle } from "@/lib/theme";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -30,7 +31,24 @@ function formatTime(d: Date) {
   return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function NewTripScreen() {
+function parseStoredTime(s: string): Date | null {
+  if (!s) return null;
+  const match = s.match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const d = new Date();
+  d.setHours(parseInt(match[1], 10), parseInt(match[2], 10), 0, 0);
+  return d;
+}
+
+export default function EditTripScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { trips, updateTrip } = useTrips();
+  const router = useRouter();
+
+  const trip = trips.find((t) => t.id === id);
+  const speciesSuggestions = knownSpecies(trips.map((t) => t.fishGot));
+  const baitSuggestions = knownBaits(trips.map((t) => t.bait));
+
   const [tripDate, setTripDate] = useState<Date | null>(null);
   const [tripTime, setTripTime] = useState<Date | null>(null);
   const [location, setLocation] = useState("");
@@ -39,68 +57,69 @@ export default function NewTripScreen() {
   const [notes, setNotes] = useState("");
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const removePhoto = (index: number) =>
-    setImageUris((prev) => prev.filter((_, i) => i !== index));
 
-  const { addTrip, trips } = useTrips();
-  const speciesSuggestions = knownSpecies(trips.map((t) => t.fishGot));
-  const baitSuggestions = knownBaits(trips.map((t) => t.bait));
+  // Populate the form once the trip is available. This also handles async load
+  // on direct navigation / hard refresh, where `trip` is undefined on first
+  // render and only becomes available after trips finish loading.
+  useEffect(() => {
+    if (!trip) return;
+    setTripDate(parseTripDate(trip.date));
+    setTripTime(parseStoredTime(trip.time));
+    setLocation(trip.location);
+    setFishEntries(parseFish(trip.fishGot));
+    setBait(trip.bait ?? "");
+    setNotes(trip.notes ?? "");
+    setImageUris(trip.imageUris ?? []);
+  }, [trip]);
 
-  const onLogTrip = async () => {
+  if (!trip) {
+    return (
+      <View style={styles.notFound}>
+        <Text style={{ color: "#fff", fontSize: 16 }}>Trip not found.</Text>
+      </View>
+    );
+  }
+
+  const onSave = async () => {
     Keyboard.dismiss();
     setSaving(true);
     try {
-      await addTrip(
-        tripDate ? toISODate(tripDate) : "",
-        tripTime ? formatTime(tripTime) : "",
+      await updateTrip(id, {
+        date: tripDate ? toISODate(tripDate) : "",
+        time: tripTime ? formatTime(tripTime) : "",
         location,
-        serializeFish(fishEntries),
+        fishGot: serializeFish(fishEntries),
         bait,
         notes,
         imageUris,
-      );
+      });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setTripDate(null);
-      setTripTime(null);
-      setLocation("");
-      setFishEntries([]);
-      setBait("");
-      setNotes("");
-      setImageUris([]);
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2200);
+      router.back();
     } catch {
-      // addTrip already surfaces the error; keep the form intact so nothing is lost
+      // updateTrip already surfaces the error; keep the user on the edit form
     } finally {
       setSaving(false);
     }
   };
 
-  const hasAnyField =
-    tripDate || tripTime || location || fishEntries.length > 0 || bait || notes || imageUris.length > 0;
+  const removePhoto = (index: number) => {
+    setImageUris((prev) => prev.filter((_, i) => i !== index));
+  };
 
   return (
-    <View style={styles.bg}>
     <ScrollView
+      style={styles.bg}
       contentContainerStyle={styles.scroll}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={styles.header}>
-        <Text style={styles.headerEmoji}>🎣</Text>
-        <Text style={styles.headerTitle}>Log a Trip</Text>
-        <Text style={styles.headerSub}>What&apos;d you catch today?</Text>
-      </View>
-
       <View style={styles.card}>
         <Text style={styles.sectionLabel}>TRIP DETAILS</Text>
-
         <DateTimePickerField
           icon="calendar"
           placeholder="Date"
           mode="date"
           value={tripDate}
-          onChange={(d) => setTripDate(d || null)}
+          onChange={setTripDate}
           displayValue={tripDate ? formatDate(tripDate) : ""}
         />
         <DateTimePickerField
@@ -108,7 +127,7 @@ export default function NewTripScreen() {
           placeholder="Time"
           mode="time"
           value={tripTime}
-          onChange={(d) => setTripTime(d || null)}
+          onChange={setTripTime}
           displayValue={tripTime ? formatTime(tripTime) : ""}
         />
         <FormField icon="map-marker" placeholder="Location" value={location} onChangeText={setLocation} />
@@ -132,7 +151,7 @@ export default function NewTripScreen() {
         <Text style={styles.sectionLabel}>NOTES</Text>
         <FormField
           icon="pencil"
-          placeholder="Conditions, what worked, anything worth remembering…"
+          placeholder="Conditions, observations…"
           value={notes}
           onChangeText={setNotes}
           multiline
@@ -160,85 +179,33 @@ export default function NewTripScreen() {
 
       <Pressable
         style={({ pressed }) => [
-          styles.logButton,
-          (!hasAnyField || saving) && styles.logButtonDisabled,
-          pressed && styles.logButtonPressed,
+          styles.saveButton,
+          pressed && styles.saveButtonPressed,
+          saving && styles.saveButtonDisabled,
         ]}
-        onPress={onLogTrip}
-        disabled={!hasAnyField || saving}
+        onPress={onSave}
+        disabled={saving}
       >
         {saving ? (
           <ActivityIndicator color="#fff" />
         ) : (
           <>
             <FontAwesome name="check" size={16} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.logButtonText}>Save Trip</Text>
+            <Text style={styles.saveButtonText}>Save Changes</Text>
           </>
         )}
       </Pressable>
     </ScrollView>
-
-      {showToast && (
-        <View style={styles.toast} pointerEvents="none">
-          <FontAwesome name="check-circle" size={16} color="#fff" />
-          <Text style={styles.toastText}>Trip saved</Text>
-        </View>
-      )}
-    </View>
   );
 }
 
 const CARD_BG = "rgba(255,255,255,0.10)";
 
 const styles = StyleSheet.create({
-  bg: {
-    flex: 1,
-    backgroundColor: "#4478e6",
-  },
-  scroll: {
-    paddingHorizontal: 18,
-    paddingBottom: 48,
-  },
-  toast: {
-    position: "absolute",
-    bottom: 28,
-    alignSelf: "center",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "rgba(20,40,80,0.95)",
-    borderRadius: 24,
-    paddingVertical: 11,
-    paddingHorizontal: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  toastText: { color: "#fff", fontSize: 14, fontWeight: "600", ...fontStyle },
-  header: {
-    alignItems: "center",
-    paddingTop: 32,
-    paddingBottom: 24,
-  },
-  headerEmoji: {
-    fontSize: 44,
-    marginBottom: 6,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#fff",
-    letterSpacing: 0.3,
-    ...fontStyle,
-  },
-  headerSub: {
-    fontSize: 15,
-    color: "rgba(255,255,255,0.6)",
-    marginTop: 4,
-    ...fontStyle,
-  },
+  bg: { flex: 1, backgroundColor: "#4478e6" },
+  scroll: { paddingHorizontal: 18, paddingTop: 20, paddingBottom: 48 },
+  notFound: { flex: 1, backgroundColor: "#4478e6", justifyContent: "center", alignItems: "center" },
+
   card: {
     backgroundColor: CARD_BG,
     borderRadius: 16,
@@ -258,18 +225,10 @@ const styles = StyleSheet.create({
     marginTop: 2,
     ...fontStyle,
   },
-  photosContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 8,
-  },
+
+  photosContent: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 8 },
   photoWrap: { position: "relative" },
-  photoThumb: {
-    width: 72,
-    height: 72,
-    borderRadius: 10,
-  },
+  photoThumb: { width: 72, height: 72, borderRadius: 10 },
   photoRemove: {
     position: "absolute",
     top: -6,
@@ -277,7 +236,8 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.55)",
     borderRadius: 10,
   },
-  logButton: {
+
+  saveButton: {
     flexDirection: "row",
     backgroundColor: "#f4b183",
     borderRadius: 14,
@@ -291,18 +251,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
-  logButtonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  logButtonDisabled: {
-    opacity: 0.45,
-  },
-  logButtonText: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-    ...fontStyle,
-  },
+  saveButtonPressed: { opacity: 0.8, transform: [{ scale: 0.98 }] },
+  saveButtonDisabled: { opacity: 0.5 },
+  saveButtonText: { color: "#fff", fontSize: 17, fontWeight: "700", ...fontStyle },
 });

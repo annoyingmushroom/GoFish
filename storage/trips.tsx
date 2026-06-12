@@ -8,6 +8,8 @@ export type Trip = {
   date: string;
   location: string;
   fishGot: string;
+  bait: string;
+  notes: string;
   imageUris: string[];
 };
 

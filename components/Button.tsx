@@ -1,57 +1,35 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-type ButtonTheme = "confirm" | "delete";
-
 type Props = {
   label: string;
-  theme?: ButtonTheme;
+  theme?: "confirm" | "delete";
   onPress?: () => void;
 };
 
 export default function Button({ label, theme, onPress }: Props) {
-  const logPress = () => {
-    alert("Trip logged.");
-    onPress?.();
-  };
-
   if (theme === "confirm") {
     return (
-      <View
-        style={[
-          styles.buttonContainer,
-          { borderWidth: 3, borderColor: "#ffa600", borderRadius: 18 },
-        ]}
-      >
-        <Pressable
-          style={[styles.button, { backgroundColor: "#fff" }]}
-          onPress={logPress}
-        >
-          <FontAwesome
-            name="clipboard"
-            size={18}
-            color="#25292e"
-            style={styles.buttonIcon}
-          />
-          <Text style={[styles.buttonLabel, { color: "#25292e" }]}>
-            {label}
-          </Text>
+      <View style={[styles.container, styles.confirmBorder]}>
+        <Pressable style={[styles.button, styles.confirmBg]} onPress={onPress}>
+          <FontAwesome name="clipboard" size={18} color="#25292e" style={styles.icon} />
+          <Text style={[styles.label, { color: "#25292e" }]}>{label}</Text>
         </Pressable>
       </View>
     );
   }
 
   return (
-    <View style={styles.buttonContainer}>
-      <Pressable style={styles.button} onPress={() => alert("You are gay.")}>
-        <Text style={styles.buttonLabel}>{label}</Text>
+    <View style={styles.container}>
+      <Pressable style={styles.button} onPress={onPress}>
+        <Text style={styles.label}>{label}</Text>
       </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  buttonContainer: {
+  container: {
     width: 300,
     height: 60,
     marginHorizontal: 20,
@@ -59,6 +37,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 2,
+  },
+  confirmBorder: {
+    borderWidth: 3,
+    borderColor: "#ffa600",
+    borderRadius: 18,
+  },
+  confirmBg: {
+    backgroundColor: "#fff",
   },
   button: {
     borderRadius: 18,
@@ -68,11 +54,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
   },
-  buttonLabel: {
+  label: {
     color: "#fff",
     fontSize: 16,
   },
-  buttonIcon: {
+  icon: {
     paddingRight: 8,
   },
 });
