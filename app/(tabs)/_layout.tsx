@@ -1,10 +1,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
-import { Pressable } from "react-native";
+import { Tabs, useRouter } from "expo-router";
+import { Pressable, View } from "react-native";
 
 export default function TabsLayout() {
   const { signOut } = useAuth();
+  const router = useRouter();
 
   return (
     <Tabs
@@ -24,12 +25,27 @@ export default function TabsLayout() {
         headerTintColor: "#fff",
         headerTitleStyle: { fontWeight: "700", fontSize: 18 },
         headerRight: () => (
-          <Pressable onPress={signOut} style={{ paddingRight: 16 }} hitSlop={10}>
-            <Ionicons name="log-out-outline" size={22} color="rgba(255,255,255,0.7)" />
-          </Pressable>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 18, paddingRight: 16 }}>
+            <Pressable onPress={() => router.push("/profile")} hitSlop={10}>
+              <Ionicons name="person-circle-outline" size={24} color="rgba(255,255,255,0.7)" />
+            </Pressable>
+            <Pressable onPress={signOut} hitSlop={10}>
+              <Ionicons name="log-out-outline" size={22} color="rgba(255,255,255,0.7)" />
+            </Pressable>
+          </View>
         ),
       }}
     >
+      <Tabs.Screen
+        name="feed/index"
+        options={{
+          headerTitle: "Feed",
+          title: "Feed",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? "newspaper" : "newspaper-outline"} color={color} size={24} />
+          ),
+        }}
+      />
       <Tabs.Screen
         name="newtrip/index"
         options={{
@@ -47,6 +63,26 @@ export default function TabsLayout() {
           title: "My Trips",
           tabBarIcon: ({ focused, color }) => (
             <Ionicons name={focused ? "fish-sharp" : "fish-outline"} color={color} size={26} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="friends/index"
+        options={{
+          headerTitle: "Friends",
+          title: "Friends",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? "people" : "people-outline"} color={color} size={24} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="leaderboard/index"
+        options={{
+          headerTitle: "Leaderboard",
+          title: "Ranks",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons name={focused ? "trophy" : "trophy-outline"} color={color} size={22} />
           ),
         }}
       />

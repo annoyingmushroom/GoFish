@@ -23,7 +23,15 @@ export type Trip = {
   notes: string;
   imageUris: string[];
   createdAt: string;
+  visibility: string; // 'friends' (in feed/leaderboard) | 'private'
+  fishCount: number; // denormalized total, kept in sync with fishGot
 };
+
+// Total fish in a "kingfish x1, tilapia x2" string. Kept local (not imported
+// from lib/stats) to avoid a circular import; lib/stats imports the Trip type.
+function countFish(fishGot: string): number {
+  return parseFish(fishGot).reduce((sum, f) => sum + f.count, 0);
+}
 
 type TripsContextType = {
   trips: Trip[];
@@ -56,11 +64,13 @@ function normalizeStoredDate(date: string): string {
 }
 
 function normalizeTripForStorage(trip: Trip): Trip {
+  const fishGot = normalizeFish(trip.fishGot);
   return {
     ...trip,
     date: normalizeStoredDate(trip.date),
     location: titleCase(trip.location),
-    fishGot: normalizeFish(trip.fishGot),
+    fishGot,
+    fishCount: countFish(fishGot),
   };
 }
 
@@ -68,7 +78,8 @@ function needsStorageCleanup(before: Trip, after: Trip): boolean {
   return (
     before.date !== after.date ||
     before.location !== after.location ||
-    before.fishGot !== after.fishGot
+    before.fishGot !== after.fishGot ||
+    before.fishCount !== after.fishCount
   );
 }
 
@@ -83,6 +94,8 @@ function rowToTrip(row: Record<string, unknown>): Trip {
     notes: (row.notes as string) ?? "",
     imageUris: (row.image_urls as string[]) ?? [],
     createdAt: (row.created_at as string) ?? "",
+    visibility: (row.visibility as string) ?? "friends",
+    fishCount: (row.fish_count as number) ?? 0,
   };
 }
 
@@ -119,6 +132,7 @@ export function TripsProvider({ children }: { children: ReactNode }) {
                   date: clean.date,
                   location: clean.location,
                   fish_got: clean.fishGot,
+                  fish_count: clean.fishCount,
                 })
                 .eq("id", clean.id);
             }),
@@ -145,6 +159,7 @@ export function TripsProvider({ children }: { children: ReactNode }) {
       notify("Photo upload failed", e instanceof Error ? e.message : String(e));
       throw e;
     }
+    const cleanFish = normalizeFish(fishGot);
     const { data, error } = await supabase
       .from("trips")
       .insert({
@@ -152,7 +167,8 @@ export function TripsProvider({ children }: { children: ReactNode }) {
         date,
         time,
         location: titleCase(location),
-        fish_got: normalizeFish(fishGot),
+        fish_got: cleanFish,
+        fish_count: countFish(cleanFish),
         bait,
         notes,
         image_urls: uploadedUrls,
@@ -175,9 +191,14 @@ export function TripsProvider({ children }: { children: ReactNode }) {
     if (fields.date !== undefined) update.date = fields.date;
     if (fields.time !== undefined) update.time = fields.time;
     if (fields.location !== undefined) update.location = titleCase(fields.location);
-    if (fields.fishGot !== undefined) update.fish_got = normalizeFish(fields.fishGot);
+    if (fields.fishGot !== undefined) {
+      const cleanFish = normalizeFish(fields.fishGot);
+      update.fish_got = cleanFish;
+      update.fish_count = countFish(cleanFish);
+    }
     if (fields.bait !== undefined) update.bait = fields.bait;
     if (fields.notes !== undefined) update.notes = fields.notes;
+    if (fields.visibility !== undefined) update.visibility = fields.visibility;
     if (imageUris !== undefined) update.image_urls = imageUris;
 
     const { data, error } = await supabase
