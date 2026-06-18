@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   removeBtn: { paddingLeft: 8 },
   countWrap: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginTop: 10,
     marginLeft: 4,
   },
@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "rgba(255,255,255,0.45)",
     marginRight: 8,
+    marginTop: 8,
     width: 24,
     ...fontStyle,
   },
