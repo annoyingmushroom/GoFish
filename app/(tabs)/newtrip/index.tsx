@@ -1,34 +1,13 @@
-import BaitInput from "@/components/BaitInput";
-import DateTimePickerField from "@/components/DateTimePicker";
-import FishCatchInput from "@/components/FishCatchInput";
-import FormField from "@/components/FormField";
-import PickImageButton from "@/components/PickImageButton";
+import TripForm from "@/components/TripForm";
 import { useTrips } from "@/contexts/TripsContext";
 import { knownBaits } from "@/lib/bait";
-import { toISODate } from "@/lib/date";
+import { formatTime, toISODate } from "@/lib/date";
 import { FishEntry, knownSpecies, serializeFish } from "@/lib/fish";
 import { fontStyle } from "@/lib/theme";
 import { FontAwesome } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  Keyboard,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-
-function formatDate(d: Date) {
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-}
-
-function formatTime(d: Date) {
-  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-}
+import { Keyboard, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function NewTripScreen() {
   const [tripDate, setTripDate] = useState<Date | null>(null);
@@ -40,12 +19,13 @@ export default function NewTripScreen() {
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [showToast, setShowToast] = useState(false);
-  const removePhoto = (index: number) =>
-    setImageUris((prev) => prev.filter((_, i) => i !== index));
 
   const { addTrip, trips } = useTrips();
   const speciesSuggestions = knownSpecies(trips.map((t) => t.fishGot));
   const baitSuggestions = knownBaits(trips.map((t) => t.bait));
+
+  const hasAnyField =
+    tripDate || tripTime || location || fishEntries.length > 0 || bait || notes || imageUris.length > 0;
 
   const onLogTrip = async () => {
     Keyboard.dismiss();
@@ -77,106 +57,31 @@ export default function NewTripScreen() {
     }
   };
 
-  const hasAnyField =
-    tripDate || tripTime || location || fishEntries.length > 0 || bait || notes || imageUris.length > 0;
-
   return (
     <View style={styles.bg}>
-    <ScrollView
-      contentContainerStyle={styles.scroll}
-      keyboardShouldPersistTaps="handled"
-    >
-      <View style={styles.header}>
-        <Text style={styles.headerEmoji}>🎣</Text>
-        <Text style={styles.headerTitle}>Log a Trip</Text>
-        <Text style={styles.headerSub}>What&apos;d you catch today?</Text>
-      </View>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.header}>
+          <Text style={styles.headerEmoji}>🎣</Text>
+          <Text style={styles.headerTitle}>Log a Trip</Text>
+          <Text style={styles.headerSub}>What&apos;d you catch today?</Text>
+        </View>
 
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>TRIP DETAILS</Text>
-
-        <DateTimePickerField
-          icon="calendar"
-          placeholder="Date"
-          mode="date"
-          value={tripDate}
-          onChange={(d) => setTripDate(d || null)}
-          displayValue={tripDate ? formatDate(tripDate) : ""}
+        <TripForm
+          tripDate={tripDate} setTripDate={setTripDate}
+          tripTime={tripTime} setTripTime={setTripTime}
+          location={location} setLocation={setLocation}
+          fishEntries={fishEntries} setFishEntries={setFishEntries}
+          bait={bait} setBait={setBait}
+          notes={notes} setNotes={setNotes}
+          imageUris={imageUris} setImageUris={setImageUris}
+          speciesSuggestions={speciesSuggestions}
+          baitSuggestions={baitSuggestions}
+          onSave={onLogTrip}
+          saving={saving}
+          submitLabel="Save Trip"
+          submitDisabled={!hasAnyField || saving}
         />
-        <DateTimePickerField
-          icon="clock-o"
-          placeholder="Time"
-          mode="time"
-          value={tripTime}
-          onChange={(d) => setTripTime(d || null)}
-          displayValue={tripTime ? formatTime(tripTime) : ""}
-        />
-        <FormField icon="map-marker" placeholder="Location" value={location} onChangeText={setLocation} />
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>BAIT / LURE</Text>
-        <BaitInput value={bait} onChangeText={setBait} suggestions={baitSuggestions} />
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>FISH CAUGHT</Text>
-        <FishCatchInput
-          entries={fishEntries}
-          setEntries={setFishEntries}
-          suggestions={speciesSuggestions}
-        />
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>NOTES</Text>
-        <FormField
-          icon="pencil"
-          placeholder="Conditions, what worked, anything worth remembering…"
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-        />
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.sectionLabel}>PHOTOS</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.photosContent}
-        >
-          <PickImageButton uris={imageUris} setUris={setImageUris} />
-          {imageUris.map((uri, i) => (
-            <View key={i} style={styles.photoWrap}>
-              <Image source={{ uri }} style={styles.photoThumb} />
-              <Pressable style={styles.photoRemove} onPress={() => removePhoto(i)} hitSlop={4}>
-                <FontAwesome name="times-circle" size={18} color="#fff" />
-              </Pressable>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-
-      <Pressable
-        style={({ pressed }) => [
-          styles.logButton,
-          (!hasAnyField || saving) && styles.logButtonDisabled,
-          pressed && styles.logButtonPressed,
-        ]}
-        onPress={onLogTrip}
-        disabled={!hasAnyField || saving}
-      >
-        {saving ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <>
-            <FontAwesome name="check" size={16} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.logButtonText}>Save Trip</Text>
-          </>
-        )}
-      </Pressable>
-    </ScrollView>
+      </ScrollView>
 
       {showToast && (
         <View style={styles.toast} pointerEvents="none">
@@ -188,17 +93,13 @@ export default function NewTripScreen() {
   );
 }
 
-const CARD_BG = "rgba(255,255,255,0.10)";
-
 const styles = StyleSheet.create({
-  bg: {
-    flex: 1,
-    backgroundColor: "#4478e6",
-  },
-  scroll: {
-    paddingHorizontal: 18,
-    paddingBottom: 48,
-  },
+  bg: { flex: 1, backgroundColor: "#4478e6" },
+  scroll: { paddingHorizontal: 18, paddingBottom: 48 },
+  header: { alignItems: "center", paddingTop: 32, paddingBottom: 24 },
+  headerEmoji: { fontSize: 44, marginBottom: 6 },
+  headerTitle: { fontSize: 28, fontWeight: "800", color: "#fff", letterSpacing: 0.3, ...fontStyle },
+  headerSub: { fontSize: 15, color: "rgba(255,255,255,0.6)", marginTop: 4, ...fontStyle },
   toast: {
     position: "absolute",
     bottom: 28,
@@ -217,92 +118,4 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   toastText: { color: "#fff", fontSize: 14, fontWeight: "600", ...fontStyle },
-  header: {
-    alignItems: "center",
-    paddingTop: 32,
-    paddingBottom: 24,
-  },
-  headerEmoji: {
-    fontSize: 44,
-    marginBottom: 6,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#fff",
-    letterSpacing: 0.3,
-    ...fontStyle,
-  },
-  headerSub: {
-    fontSize: 15,
-    color: "rgba(255,255,255,0.6)",
-    marginTop: 4,
-    ...fontStyle,
-  },
-  card: {
-    backgroundColor: CARD_BG,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 4,
-    marginBottom: 14,
-  },
-  sectionLabel: {
-    fontSize: 10,
-    fontWeight: "700",
-    color: "#f4b183",
-    letterSpacing: 1.2,
-    marginBottom: 10,
-    marginTop: 2,
-    ...fontStyle,
-  },
-  photosContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingVertical: 8,
-  },
-  photoWrap: { position: "relative" },
-  photoThumb: {
-    width: 72,
-    height: 72,
-    borderRadius: 10,
-  },
-  photoRemove: {
-    position: "absolute",
-    top: -6,
-    right: -6,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    borderRadius: 10,
-  },
-  logButton: {
-    flexDirection: "row",
-    backgroundColor: "#f4b183",
-    borderRadius: 14,
-    height: 52,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  logButtonPressed: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
-  },
-  logButtonDisabled: {
-    opacity: 0.45,
-  },
-  logButtonText: {
-    color: "#fff",
-    fontSize: 17,
-    fontWeight: "700",
-    letterSpacing: 0.2,
-    ...fontStyle,
-  },
 });

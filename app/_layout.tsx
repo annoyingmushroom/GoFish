@@ -1,8 +1,9 @@
+import WebAutofillStyles from "@/components/WebAutofillStyles";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TripsProvider } from "@/contexts/TripsContext";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, LogBox, Platform, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, LogBox, StyleSheet, Text, View } from "react-native";
 
 LogBox.ignoreAllLogs(true);
 
@@ -39,34 +40,6 @@ function RootNavigator() {
       <Stack.Screen name="+not-found" />
     </Stack>
   );
-}
-
-function WebAutofillStyles() {
-  useEffect(() => {
-    if (Platform.OS !== "web" || typeof document === "undefined") return;
-
-    const id = "gofish-autofill-styles";
-    if (document.getElementById(id)) return;
-
-    const style = document.createElement("style");
-    style.id = id;
-    style.textContent = `
-      input:-webkit-autofill,
-      input:-webkit-autofill:hover,
-      input:-webkit-autofill:focus,
-      textarea:-webkit-autofill,
-      textarea:-webkit-autofill:hover,
-      textarea:-webkit-autofill:focus {
-        -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.18) inset !important;
-        -webkit-text-fill-color: #fff !important;
-        caret-color: #fff !important;
-        transition: background-color 9999s ease-out 0s;
-      }
-    `;
-    document.head.appendChild(style);
-  }, []);
-
-  return null;
 }
 
 export default function RootLayout() {

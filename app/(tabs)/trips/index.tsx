@@ -1,29 +1,14 @@
 import FishBadges from "@/components/FishBadges";
 import { useTrips } from "@/contexts/TripsContext";
-import { formatTripDate, parseTripDate, tripDateSortKey } from "@/lib/date";
+import { formatTripDate, monthLabel, tripDateSortKey } from "@/lib/date";
 import { confirm } from "@/lib/notify";
 import { fontStyle } from "@/lib/theme";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import {
-  Image,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-function monthLabel(dateStr: string): string {
-  const d = parseTripDate(dateStr);
-  if (!d) return "Undated";
-  return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
-}
-
-// A single row of square thumbnails that scrolls left-to-right. Each crops
-// with "cover"; tap to open fullscreen.
+// A single row of square thumbnails that scrolls left-to-right; tap to fullscreen.
 function PhotoRow({ uris, onOpen }: { uris: string[]; onOpen: (uri: string) => void }) {
   if (uris.length === 0) return null;
   return (
@@ -33,13 +18,7 @@ function PhotoRow({ uris, onOpen }: { uris: string[]; onOpen: (uri: string) => v
       contentContainerStyle={styles.photoRowContent}
     >
       {uris.map((uri, i) => (
-        <Pressable
-          key={i}
-          onPress={(e) => {
-            e.stopPropagation();
-            onOpen(uri);
-          }}
-        >
+        <Pressable key={i} onPress={(e) => { e.stopPropagation(); onOpen(uri); }}>
           <Image source={{ uri }} style={styles.gridThumb} resizeMode="cover" />
         </Pressable>
       ))}
@@ -57,8 +36,7 @@ export default function TripsScreen() {
     if (ok) removeTrip(id);
   };
 
-  // Newest trip-date first; trips with the same (or no) date fall back to when
-  // they were logged (the id) so order stays stable.
+  // Newest trip-date first; same-date trips fall back to creation order.
   const sorted = [...trips].sort((a, b) => {
     const diff = tripDateSortKey(b.date) - tripDateSortKey(a.date);
     return diff !== 0 ? diff : Date.parse(b.createdAt) - Date.parse(a.createdAt);
@@ -82,7 +60,6 @@ export default function TripsScreen() {
         {sorted.map((trip) => {
           const dateLine = [formatTripDate(trip.date), trip.time].filter(Boolean).join("  ·  ");
           const photos = trip.imageUris ?? [];
-
           const month = monthLabel(trip.date);
           const showHeader = month !== lastMonth;
           lastMonth = month;
@@ -95,22 +72,15 @@ export default function TripsScreen() {
                 style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
                 onPress={() => router.push({ pathname: "/(tabs)/trips/[id]", params: { id: trip.id } })}
               >
-                {/* Tan date strip */}
                 <View style={styles.tanStrip}>
                   <FontAwesome name="calendar" size={13} color="#7a531a" />
                   <Text style={styles.tanStripText}>{dateLine || "Undated"}</Text>
                 </View>
 
-                {/* Delete */}
-                <Pressable
-                  style={styles.deleteBtn}
-                  onPress={() => confirmDelete(trip.id)}
-                  hitSlop={10}
-                >
+                <Pressable style={styles.deleteBtn} onPress={() => confirmDelete(trip.id)} hitSlop={10}>
                   <FontAwesome name="trash" size={14} color="#fff" />
                 </Pressable>
 
-                {/* Content */}
                 <View style={styles.content}>
                   <View style={styles.locationRow}>
                     <FontAwesome name="map-marker" size={16} color="#4478e6" />
@@ -160,22 +130,10 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#4478e6" },
   scroll: { padding: 16, paddingBottom: 32 },
 
-  empty: {
-    flex: 1,
-    backgroundColor: "#4478e6",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
+  empty: { flex: 1, backgroundColor: "#4478e6", justifyContent: "center", alignItems: "center", gap: 8 },
   emptyEmoji: { fontSize: 64 },
   emptyTitle: { fontSize: 22, fontWeight: "700", color: "#fff", ...fontStyle },
-  emptySub: {
-    fontSize: 15,
-    color: "rgba(255,255,255,0.55)",
-    textAlign: "center",
-    paddingHorizontal: 40,
-    ...fontStyle,
-  },
+  emptySub: { fontSize: 15, color: "rgba(255,255,255,0.55)", textAlign: "center", paddingHorizontal: 40, ...fontStyle },
 
   monthHeader: {
     fontSize: 13,
@@ -202,14 +160,7 @@ const styles = StyleSheet.create({
   },
   cardPressed: { opacity: 0.92 },
 
-  tanStrip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    height: 38,
-    paddingHorizontal: 16,
-    backgroundColor: "#f4b183",
-  },
+  tanStrip: { flexDirection: "row", alignItems: "center", gap: 6, height: 38, paddingHorizontal: 16, backgroundColor: "#f4b183" },
   tanStripText: { color: "#7a531a", fontSize: 12, fontWeight: "600", ...fontStyle },
 
   deleteBtn: {
@@ -225,45 +176,16 @@ const styles = StyleSheet.create({
   },
 
   content: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 14 },
-
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-  },
-  location: {
-    flex: 1,
-    fontSize: 17,
-    fontWeight: "700",
-    color: "#1a1a1a",
-    ...fontStyle,
-  },
-
+  locationRow: { flexDirection: "row", alignItems: "center", gap: 7 },
+  location: { flex: 1, fontSize: 17, fontWeight: "700", color: "#1a1a1a", ...fontStyle },
   fishRow: { marginTop: 8 },
   detail: { fontSize: 14, color: "#666", marginTop: 6, ...fontStyle },
-  notes: {
-    fontSize: 14,
-    color: "#555",
-    fontStyle: "italic",
-    marginTop: 8,
-    lineHeight: 20,
-    ...fontStyle,
-  },
+  notes: { fontSize: 14, color: "#555", fontStyle: "italic", marginTop: 8, lineHeight: 20, ...fontStyle },
 
   photoSection: { marginTop: 12 },
   photoRowContent: { gap: GRID_GAP },
-  gridThumb: {
-    width: GRID_THUMB,
-    height: GRID_THUMB,
-    borderRadius: 10,
-    backgroundColor: "#e3e8f0",
-  },
+  gridThumb: { width: GRID_THUMB, height: GRID_THUMB, borderRadius: 10, backgroundColor: "#e3e8f0" },
 
-  modalBg: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.95)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.95)", justifyContent: "center", alignItems: "center" },
   fullImg: { width: "100%", height: "80%" },
 });
