@@ -31,3 +31,30 @@ export function tripDateSortKey(stored: string): number {
   const d = parseTripDate(stored);
   return d ? d.getTime() : 0;
 }
+
+// Format a Date for the date picker display field, e.g. "12 Jun 2026".
+export function formatDate(d: Date): string {
+  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// Format a Date for the time picker display field, e.g. "14:30".
+export function formatTime(d: Date): string {
+  return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+}
+
+// Parse a stored "HH:MM" time string back into a Date (today's date, given time).
+export function parseStoredTime(s: string): Date | null {
+  if (!s) return null;
+  const match = s.match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  const d = new Date();
+  d.setHours(parseInt(match[1], 10), parseInt(match[2], 10), 0, 0);
+  return d;
+}
+
+// Month heading label for trip list grouping, e.g. "June 2026".
+export function monthLabel(dateStr: string): string {
+  const d = parseTripDate(dateStr);
+  if (!d) return "Undated";
+  return d.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+}
