@@ -1,6 +1,6 @@
 import { COLORS, fontStyle } from "@/lib/theme";
 import { FontAwesome } from "@expo/vector-icons";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 // The quick-pick bar shows pills 1..MAX_PILL. Counts beyond that are entered
 // with the "10+" stepper, which starts at PLUS_START.
@@ -12,19 +12,15 @@ type Props = {
   onChange: (n: number) => void;
 };
 
-// A horizontally scrollable picker for how many fish of a species were caught.
-// Tapping a number 1–10 selects it directly; "10+" reveals a stepper for
-// larger counts.
+// A picker for how many fish of a species were caught. Tapping a number 1–10
+// selects it directly; "10+" reveals a stepper for larger counts. The pills
+// wrap onto additional rows on narrow screens so none are pushed off-screen.
 export default function CountPicker({ value, onChange }: Props) {
   const isPlus = value > MAX_PILL;
 
   return (
-    <View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
-      >
+    <View style={styles.container}>
+      <View style={styles.row}>
         {Array.from({ length: MAX_PILL }, (_, i) => i + 1).map((n) => (
           <NumberPill key={n} label={n} active={value === n} onPress={() => onChange(n)} />
         ))}
@@ -36,7 +32,7 @@ export default function CountPicker({ value, onChange }: Props) {
         >
           <Text style={[styles.text, isPlus && styles.textActive]}>10+</Text>
         </Pressable>
-      </ScrollView>
+      </View>
 
       {isPlus && (
         <Stepper
@@ -90,9 +86,15 @@ function Stepper({
 }
 
 const styles = StyleSheet.create({
+  // flex: 1 lets the picker fill the width left after the "Qty" label, which
+  // gives the wrapping row below a real width limit to wrap against.
+  container: {
+    flex: 1,
+  },
   row: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
-    paddingRight: 8,
   },
   pill: {
     width: 34,
