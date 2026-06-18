@@ -1,5 +1,7 @@
 import WebAutofillStyles from "@/components/WebAutofillStyles";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { FriendsProvider } from "@/contexts/FriendsContext";
+import { ProfileProvider } from "@/contexts/ProfileContext";
 import { TripsProvider } from "@/contexts/TripsContext";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect } from "react";
@@ -27,7 +29,7 @@ function RootNavigator() {
     if (!user && !inAuth) {
       router.replace("/(auth)/login");
     } else if (user && inAuth) {
-      router.replace("/(tabs)/newtrip");
+      router.replace("/(tabs)/feed");
     }
   }, [user, loading, segments, router]);
 
@@ -37,6 +39,7 @@ function RootNavigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="(auth)" />
+      <Stack.Screen name="profile" options={{ presentation: "modal" }} />
       <Stack.Screen name="+not-found" />
     </Stack>
   );
@@ -45,10 +48,14 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <TripsProvider>
-        <WebAutofillStyles />
-        <RootNavigator />
-      </TripsProvider>
+      <ProfileProvider>
+        <FriendsProvider>
+          <TripsProvider>
+            <WebAutofillStyles />
+            <RootNavigator />
+          </TripsProvider>
+        </FriendsProvider>
+      </ProfileProvider>
     </AuthProvider>
   );
 }
