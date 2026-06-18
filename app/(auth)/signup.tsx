@@ -1,4 +1,5 @@
 import FormField from "@/components/FormField";
+import { authStyles } from "@/lib/authStyles";
 import { supabase } from "@/lib/supabase";
 import { fontStyle } from "@/lib/theme";
 import { Link } from "expo-router";
@@ -43,17 +44,17 @@ export default function SignupScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={authStyles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <View style={styles.inner}>
-        <Text style={styles.emoji}>🎣</Text>
-        <Text style={styles.title}>GoFish</Text>
-        <Text style={styles.sub}>Create a free account</Text>
+      <View style={authStyles.inner}>
+        <Text style={authStyles.emoji}>🎣</Text>
+        <Text style={authStyles.title}>GoFish</Text>
+        <Text style={authStyles.sub}>Create a free account</Text>
 
         {!!error && (
-          <View style={styles.errorBox}>
-            <Text style={styles.errorText}>{error}</Text>
+          <View style={authStyles.errorBox}>
+            <Text style={authStyles.errorText}>{error}</Text>
           </View>
         )}
         {!!success && (
@@ -62,7 +63,7 @@ export default function SignupScreen() {
           </View>
         )}
 
-        <View style={styles.card}>
+        <View style={authStyles.card}>
           <FormField
             icon="envelope"
             placeholder="Email"
@@ -90,20 +91,20 @@ export default function SignupScreen() {
         </View>
 
         <Pressable
-          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed, loading && styles.buttonDisabled]}
+          style={({ pressed }) => [authStyles.button, pressed && authStyles.buttonPressed, loading && authStyles.buttonDisabled]}
           onPress={onSignup}
           disabled={loading}
         >
           {loading
             ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.buttonText}>Create Account</Text>
+            : <Text style={authStyles.buttonText}>Create Account</Text>
           }
         </Pressable>
 
         <Link href="/(auth)/login" asChild>
-          <Pressable style={styles.switchLink}>
-            <Text style={styles.switchText}>
-              Already have an account? <Text style={styles.switchBold}>Sign in</Text>
+          <Pressable style={authStyles.switchLink}>
+            <Text style={authStyles.switchText}>
+              Already have an account? <Text style={authStyles.switchBold}>Sign in</Text>
             </Text>
           </Pressable>
         </Link>
@@ -112,29 +113,8 @@ export default function SignupScreen() {
   );
 }
 
+// Only the success banner is unique to this screen; everything else is in authStyles.
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#4478e6" },
-  inner: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 28,
-  },
-  emoji: { fontSize: 56, marginBottom: 8 },
-  title: { fontSize: 36, fontWeight: "800", color: "#fff", letterSpacing: 0.5, ...fontStyle },
-  sub: { fontSize: 15, color: "rgba(255,255,255,0.55)", marginTop: 4, marginBottom: 20, ...fontStyle },
-
-  errorBox: {
-    width: "100%",
-    backgroundColor: "rgba(255,80,80,0.2)",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "rgba(255,100,100,0.4)",
-    padding: 12,
-    marginBottom: 12,
-  },
-  errorText: { color: "#ffaaaa", fontSize: 14, textAlign: "center", ...fontStyle },
-
   successBox: {
     width: "100%",
     backgroundColor: "rgba(80,200,120,0.2)",
@@ -145,33 +125,4 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   successText: { color: "#aaffcc", fontSize: 14, textAlign: "center", ...fontStyle },
-
-  card: {
-    width: "100%",
-    backgroundColor: "rgba(255,255,255,0.10)",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.15)",
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 4,
-    marginBottom: 16,
-  },
-
-  button: {
-    width: "100%",
-    height: 52,
-    backgroundColor: "#f4b183",
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  buttonPressed: { opacity: 0.8 },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: "#fff", fontSize: 17, fontWeight: "700", ...fontStyle },
-
-  switchLink: { padding: 8 },
-  switchText: { color: "rgba(255,255,255,0.55)", fontSize: 14, ...fontStyle },
-  switchBold: { color: "#f4b183", fontWeight: "700" },
 });
