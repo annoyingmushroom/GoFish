@@ -29,13 +29,22 @@ It is built to feel like a lightweight digital logbook: fast enough to use after
   - best bait
   - monthly catch activity
   - personal bests
+- Profiles with avatars and usernames
+- Friend requests (send, accept, decline, unfriend)
+- Friends feed of shared trips, with per-trip private/friends visibility
+- Leaderboard ranking you and your friends by fish caught
 
 ## Why GoFish
 
 Fishing trips are easy to forget in the details: the tide, the spot, the bait, the little pattern that worked. GoFish gives you one place to keep those details so your log gets more useful the more you use it.
 
-## Status
+## Tech Stack
 
-GoFish is currently a web app ready for deployment.
+- **Frontend:** React Native + Expo (Expo Router), TypeScript, deployed as a web app on Vercel
+- **Backend:** Supabase (Postgres, Auth, Storage)
+- **Security:** Row-level security on every table; friends can only read trips shared with them, enforced in the database
+- **Schema:** version-controlled SQL migrations in [`supabase/migrations/`](./supabase/migrations)
 
-Developer setup notes live in [DEV_SETUP.md](./DEV_SETUP.md).
+## Development
+
+Setup, database and deployment notes live in [DEV_SETUP.md](./DEV_SETUP.md).

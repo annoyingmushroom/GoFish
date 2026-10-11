@@ -41,44 +41,15 @@ npx expo start
 
 ## Supabase Setup
 
-Create a Supabase project, then run this SQL in the Supabase SQL Editor:
+Create a Supabase project, then run each file in `supabase/migrations/` in the Supabase SQL Editor, in filename order:
 
-```sql
-create table if not exists public.trips (
-  id uuid default gen_random_uuid() primary key,
-  user_id uuid references auth.users not null,
-  date text default '',
-  time text default '',
-  location text default '',
-  fish_got text default '',
-  bait text default '',
-  notes text default '',
-  image_urls text[] default '{}',
-  created_at timestamptz default now()
-);
-
-alter table public.trips enable row level security;
-
-create policy "own trips"
-  on public.trips for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
-insert into storage.buckets (id, name, public)
-  values ('trip-photos', 'trip-photos', true)
-  on conflict do nothing;
-
-create policy "upload own photos"
-  on storage.objects for insert
-  with check (
-    bucket_id = 'trip-photos'
-    and auth.uid()::text = (storage.foldername(name))[1]
-  );
-
-create policy "public photo read"
-  on storage.objects for select
-  using (bucket_id = 'trip-photos');
-```
+1. `0000_trips.sql` - trips table and owner-only RLS
+2. `0000b_trip_photos_storage.sql` - public `trip-photos` bucket and upload policy
+3. `0001_profiles.sql` - profiles, auto-created on sign-up
+4. `0002_friendships.sql` - friend graph and `are_friends()` helper
+5. `0003_trips_friend_access.sql` - trip visibility and friend read access
+6. `0004_leaderboard.sql` - `get_leaderboard()` function
+7. `0005_fix_friendship_rls.sql` - enforces the pending -> accepted request flow
 
 For easier local testing, disable email confirmation:
 
