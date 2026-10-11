@@ -31,7 +31,7 @@ It is built to feel like a lightweight digital logbook: fast enough to use after
   - personal bests
 - Profiles with avatars and usernames
 - Friend requests (send, accept, decline, unfriend)
-- Friends feed of shared trips, with per-trip private/friends visibility
+- Friends feed of your friends' trips
 - Leaderboard ranking you and your friends by fish caught
 
 ## Why GoFish
